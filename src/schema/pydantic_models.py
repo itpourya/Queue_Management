@@ -17,6 +17,10 @@ class RegisterFields(BaseModel):
     email: str
     password: str
 
+class LoginFields(BaseModel):
+    username: str
+    password: str
+
 class GetUserByUsername(BaseModel):
     username: str
 
