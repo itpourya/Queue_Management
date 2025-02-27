@@ -1,7 +1,9 @@
 from src.repository.user_repository import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.schema.pydantic_models import RegisterFields
+from src.schema.pydantic_models import RegisterFields, GetUserByUsername
 from src.pkg.jwt import Security
+from src.models.user_model import User
+from typing import Tuple
 
 class UserService:
     def __init__(self, session: AsyncSession):
@@ -14,3 +16,11 @@ class UserService:
         status = await self.repo.create(user_data)
 
         return status
+
+    async def get_user_service(self, user_data: GetUserByUsername) -> Tuple[bool, User|None]:
+        if not user_data.username:
+            return False, None
+
+        user = self.repo.get(user_input=user_data)
+
+        return True, user[1]
