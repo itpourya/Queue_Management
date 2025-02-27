@@ -11,6 +11,9 @@ task_router: APIRouter = APIRouter()
 UPLOAD_DIR: str = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+@api_router.on_event("startup")
+async def on_startup():
+    await init_db()
 
 @api_router.post("/signup")
 async def signup():
