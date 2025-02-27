@@ -29,8 +29,17 @@ class UserRepository:
             return False
 
 
-    def get(self):
-        pass
+    def get(self, user_input: GetUserByUsername) -> User | bool:
+        query = sqlalchemy.select(User).where(User.username == user_input.username)
+
+        async with self.session as session:
+            user = session.scalar(query)
+
+            if not user.username:
+                logger.info(f"Repository: User {user_input} Not Found")
+                return False
+
+            return user
 
 
     def delete(self):
