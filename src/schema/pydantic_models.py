@@ -27,5 +27,4 @@ class GetUserByUsername(BaseModel):
 class JWTPayload(BaseModel):
     username: str
     email: str
-    id: str
     exp: int
