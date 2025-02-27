@@ -11,16 +11,18 @@ class UserRepository:
         self.session: AsyncSession = session
 
     async def create(self, user_input: RegisterFields) -> bool:
-        new_user: User = User(
-            id = uuid.uuid4(),
-            username = RegisterFields.username,
-            email = RegisterFields.email,
-            hashed_password = RegisterFields.password
-            )        
+        new_user = User()
+        new_user.id = uuid.uuid4()
+        new_user.username = user_input.username 
+        new_user.hashed_password = user_input.password
+        new_user.email = user_input.email
+        
         try:
-            self.session.add(new_user)
-            await self.session.commit()
-            return True
+            async with self.session:
+                self.session.add(new_user)
+                await self.session.commit()
+                logger.info(f"Repository: User {new_user} Created")
+                return True
 
         except Exception as e:
             logger.error(f"Error in create() Repository: {e}")
