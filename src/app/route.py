@@ -1,9 +1,16 @@
 import os, shutil
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Body, Depends
 import sys, uuid
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../../../..")
 from src.app.celery_tasks import encode_image_to_base64
 from src.utils.validator import validate_file_extensions
+from src.schema.pydantic_models import RegisterFields
+from typing import Annotated
+from src.database.db import get_db, init_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.schema.pydantic_models import RegisterFields
+from src.service.user_service import UserService
 
 api_router: APIRouter = APIRouter()
 task_router: APIRouter = APIRouter()
@@ -16,8 +23,31 @@ async def on_startup():
     await init_db()
 
 @api_router.post("/signup")
-async def signup():
-    pass
+async def signup(session: Annotated[AsyncSession, Depends(get_db)], data: RegisterFields = Body()):
+    service = UserService(session=session)
+
+    status = await service.create_user_service(data)
+
+    if not status:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "detail": "error in signup",
+                "errors": {
+                        "field": "email or username in not valid"
+                    }
+            }
+        )
+    
+    return JSONResponse(
+        status_code=201,
+        content={
+            "status": "success",
+            "data": {
+                data
+            }
+        }
+    )
 
 
 @api_router.post("/signin")
