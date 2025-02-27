@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from pydantic import BaseModel
 from passlib.context import CryptContext
-from schema.outputs import JWTPayload
+from src.schema.pydantic_models import JWTPayload
 
 SECRET_KEY = "SECRET"
 ALGORITHM: str = "HS256"
