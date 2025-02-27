@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schema.pydantic_models import RegisterFields, GetUserByUsername
 from src.models.user_model import User
+from typing import Tuple
 import logging
 import uuid
 import sqlalchemy
@@ -12,6 +13,11 @@ class UserRepository:
         self.session: AsyncSession = session
 
     async def create(self, user_input: RegisterFields) -> bool:
+        check = self.get(user_input=user_input.username)
+        if not check[0]:
+            logger.info(f"Repository: User with {user_input.username} username Found")
+            return False
+
         new_user = User()
         new_user.id = uuid.uuid4()
         new_user.username = user_input.username 
@@ -30,7 +36,7 @@ class UserRepository:
             return False
 
 
-    def get(self, user_input: GetUserByUsername) -> User | bool:
+    def get(self, user_input: GetUserByUsername) -> Tuple[bool, User|None]:
         query = sqlalchemy.select(User).where(User.username == user_input.username)
 
         try:
@@ -39,12 +45,12 @@ class UserRepository:
 
             if not user.username:
                 logger.info(f"Repository: User {user_input} Not Found")
-                return False
+                return False, None
         except Exception as e:
             logger.error(f"Error in get() Repository: {e}")
-            return False
+            return False, None
 
-        return user
+        return True, user
 
 
     def delete(self):
