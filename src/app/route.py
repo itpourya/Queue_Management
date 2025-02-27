@@ -5,7 +5,7 @@ import sys, uuid
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../../../..")
 from src.app.celery_tasks import encode_image_to_base64
 from src.utils.validator import validate_file_extensions
-from src.schema.pydantic_models import RegisterFields
+from src.schema.pydantic_models import RegisterFields, LoginFields
 from typing import Annotated
 from src.database.db import get_db, init_db
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +25,6 @@ async def on_startup():
 @api_router.post("/signup")
 async def signup(session: Annotated[AsyncSession, Depends(get_db)], data: RegisterFields = Body()):
     service = UserService(session=session)
-
     status = await service.create_user_service(data)
 
     if not status:
@@ -44,15 +43,39 @@ async def signup(session: Annotated[AsyncSession, Depends(get_db)], data: Regist
         content={
             "status": "success",
             "data": {
-                data
+                "username": data.username,
+                "email": data.email
             }
         }
     )
 
 
 @api_router.post("/signin")
-async def signin():
-    pass
+async def signin(session: Annotated[AsyncSession, Depends(get_db)], data: LoginFields = Body()):
+    service = UserService(session=session)
+    check = await service.login_user_service(data)
+
+    if not check[0]:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "detail": "error in signup",
+                "errors": {
+                        "field": "email or username in not correct"
+                    }
+            }
+        )
+    
+    return JSONResponse(
+        status_code=201,
+        content={
+            "status": "success",
+            "data": {
+                "token": check[1].access_token,
+                "type": check[1].token_type
+            }
+        }
+    )
 
 
 @task_router.post("/upload")
