@@ -2,8 +2,8 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
-
-Base = declarative_base()
+import uuid
+from src.database.db import Base
 
 
 class User(Base):
@@ -21,4 +21,4 @@ class User(Base):
             )
 
     def __repr__(self):
-        return f"<User(id={self.id}, username={self.username}, email={self.email})>"
+        return f"<User(id={self.id}, username={self.username}, email={self.email}), password={self.hashed_password}>"
