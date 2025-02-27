@@ -16,3 +16,9 @@ class RegisterFields(BaseModel):
     username: str
     email: str
     password: str
+
+class JWTPayload(BaseModel):
+    username: str
+    email: str
+    id: str
+    exp: int
